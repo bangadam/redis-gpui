@@ -1,0 +1,43 @@
+[package]
+name = "app-workflows"
+description = "TEST-ONLY crate: the 11 boundary workflow tests, fixture harness, fault seams. Not a runtime dependency of the app."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+# The workflow harness drives the redis-io `Connection` trait directly
+# (the fault-injection seam), so it needs the real crates it mirrors.
+async-trait = "0.1"
+browse = { path = "../browse", optional = true }
+redis-io = { path = "../redis-io" }
+value-model = { path = "../value-model" }
+write-safety = { path = "../write-safety" }
+
+[dev-dependencies]
+browse = { path = "../browse" }
+redis-io = { path = "../redis-io", features = ["fault-injection"] }
+tokio = { version = "1", features = ["rt", "macros"] }
+
+[features]
+# Scale measurement harness (PLAN §7 tier 3): feature-gated because it
+# pulls the browse engines + docker orchestration into the lib build.
+# Default OFF: `cargo test` uses the tests/scale_measurements.rs
+# [[test]] target, which compiles the module via #[path] under cfg(test)
+# (dev-dependencies). Turn the feature on only if a non-test consumer
+# ever needs the harness (none does today).
+scale = ["dep:browse"]
+
+# Scale tier (tests/scale_measurements.rs): the fixture is planned
+# deterministically and seeded over a raw RESP link; Docker is detected
+# at runtime, never a compile-time requirement. When Docker is absent
+# the tier self-reports MEASURE-SKIPPED and passes (PLAN §7 honesty).
+# The unit tests of the fixture plan (distribution, reproducibility,
+# probe keys) need no Docker and run in every default `cargo test`.
+[[test]]
+name = "scale_measurements"
+path = "tests/scale_measurements.rs"

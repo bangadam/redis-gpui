@@ -1,0 +1,67 @@
+# dist (cargo-dist) workspace configuration — SCHEMA VERIFIED against the
+# official reference (https://axodotdev.github.io/cargo-dist/book/reference/config.html),
+# 2026-11-08. Field names checked: cargo-dist-version, ci, installers,
+# targets, checksum, install-path, install-updater, create-release,
+# pr-run-mode, tag-namespace. This file is read by `dist`/`cargo dist`;
+# the alternative (embedding in Cargo.toml [workspace.metadata.dist])
+# is legacy-supported but the standalone file is the current form.
+#
+# ⚠️ ADAM-GATED: no `cargo dist`/`dist build` runs without Adam's explicit
+# command (same standing rule as cargo build --release). Config only.
+
+[dist]
+# Pin the dist tool version so plan/build behavior is reproducible.
+# Bump deliberately, like the GPUI pin.
+cargo-dist-version = "0.28.0"
+
+# The app binary is `redis-gpui` (workspace member src/).
+packages = ["redis-gpui"]
+
+# Tier-one targets (PRD platform strategy: macOS arm64+x64, Windows x64,
+# Linux x64 on Ubuntu LTS). ARM Windows/Linux are explicitly out of scope
+# for v1 (PRD "Out of Scope").
+targets = [
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu",
+]
+
+# macOS .dmg: produced via the extra-artifacts hook below (cargo-dist's
+# native installer list has shell/powershell/npm/homebrew/msi; the dmg
+# is built by packaging/scripts/build-dmg.sh on the macOS runners).
+# Windows: msi installer + powershell installer.
+# Linux: tar.xz archive (unix-archive default) + deb via
+# packaging/scripts/build-deb.sh; AppImage via
+# packaging/scripts/build-appimage.sh.
+installers = ["shell", "powershell", "msi"]
+
+# Shell/powershell installers for the tarballs.
+checksum = "sha256"
+
+# No automatic updater (PRD: manual update checking only).
+install-updater = false
+
+# No code signing in the first release (PRD: unsigned with clear
+# instructions; never ask the user to weaken system security).
+create-release = true
+pr-run-mode = "plan"
+
+# GitHub-hosted repo; releases land on github.com (owner set at first
+# real release; change `repo` below when the remote exists).
+github = "bangadam/redis-gpui"
+
+# Extra artifacts the stock installers don't cover (dmg on macOS,
+# deb on Linux). Each entry: a build command + the artifacts it adds.
+# The scripts are Adam-gated (packaging/README.md says so) and are
+# listed here so a real `dist` run knows they exist.
+# NOTE: verify the `extra-artifacts` table shape against your dist
+# version before the first real run; the reference documents it as a
+# list of tables with `build` and `artifacts` keys.
+extra-artifacts = [
+    { build = ["packaging/scripts/build-dmg.sh"], artifacts = ["dist/*.dmg"] },
+    { build = ["packaging/scripts/build-deb.sh"], artifacts = ["dist/*.deb"] },
+]
+
+# Source tarball of the workspace alongside binaries.
+source-tarball = true

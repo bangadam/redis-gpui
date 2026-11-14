@@ -1,0 +1,18 @@
+[package]
+name = "console-engine"
+description = "Console command parsing, policy consultation, history, and result model"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+write-safety = { path = "../write-safety" }
+# Type-only dependency: console-engine borrows `Reply` and `WriteOutcome`
+# (and their payload types) for the render model, so the display layer
+# cannot drift from the adapter's real shapes. No connection, runtime, or
+# feature is used from this crate — pure logic only.
+redis-io = { path = "../redis-io" }

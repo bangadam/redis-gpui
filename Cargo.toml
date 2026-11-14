@@ -1,0 +1,24 @@
+[workspace]
+resolver = "2"
+members = [
+    "src",
+    "crates/app-workflows",
+    "crates/browse",
+    "crates/console-engine",
+    "crates/connections-store",
+    "crates/redis-io",
+    "crates/theme",
+    "crates/value-model",
+    "crates/write-safety",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.lints.rust]
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }

@@ -1,0 +1,16 @@
+# Build output
+/target
+dist/
+build-appdir/
+build-dmg/
+build-deb-pkg/
+linuxdeploy-*.AppImage
+
+# OS noise
+.DS_Store
+
+# Internal development state and private planning docs (not published)
+.omc/
+.claude/
+PRD.md
+PLAN.md

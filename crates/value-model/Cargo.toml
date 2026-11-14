@@ -1,0 +1,21 @@
+[package]
+name = "value-model"
+description = "Raw-byte value types, view descriptors, dirty-editor state, TTL"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+# JSON *view* only: parse + re-serialize to prove round-trip fidelity.
+# No serde derive on the data model itself — the model is bytes, not
+# serialized objects.
+# preserve_order is PINNED (not optional): the src/ app crate pulls gpui
+# -> schemars -> serde_json with preserve_order, and Cargo feature
+# unification enables it workspace-wide anyway. Declaring it here makes
+# the JSON-view gate behave identically in `cargo test -p value-model`
+# and `cargo test --workspace`.
+serde_json = { version = "1.0", features = ["preserve_order"] }
+
+[lints]
+workspace = true

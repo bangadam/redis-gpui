@@ -1,0 +1,10 @@
+[package]
+name = "theme"
+description = "Light/dark tokens, system-appearance wrapper, text-size and focus tokens"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true

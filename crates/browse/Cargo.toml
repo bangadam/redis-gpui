@@ -1,0 +1,21 @@
+[package]
+name = "browse"
+description = "SCAN batching/pagination, progressive cancellable search, tree/flat key models, DB switch"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+# Trait-only dependency: browse drives `dyn Connection` and never touches
+# redis-rs directly, so it stays runtime-agnostic and windowless-testable.
+redis-io = { path = "../redis-io" }
+
+[dev-dependencies]
+# Mock Connection implementations need the same macro redis-io uses.
+async-trait = "0.1"
+# Test runtime only; the engine itself is runtime-agnostic (plain async fns).
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros"] }

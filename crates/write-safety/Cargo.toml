@@ -1,0 +1,10 @@
+[package]
+name = "write-safety"
+description = "Command policy table, read-only gate state machine, confirmation classification"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true

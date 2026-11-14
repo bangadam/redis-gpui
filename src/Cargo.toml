@@ -1,0 +1,59 @@
+[package]
+name = "redis-gpui"
+description = "A write-safe, privacy-first Redis GUI built with GPUI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+# GPUI is pre-1.0 and breaks often; both crates are pinned to one revision
+# (2026-11-07 zed main) and Cargo.lock MUST be committed. Upgrades are
+# deliberate events: compile + platform tests, never casual bumps.
+# See PLAN.md section 2 before touching these pins.
+gpui = { git = "https://github.com/zed-industries/zed", rev = "b5cd310b3b54dfc659fcc06453e6358843dfe216" }
+gpui_platform = { git = "https://github.com/zed-industries/zed", rev = "b5cd310b3b54dfc659fcc06453e6358843dfe216", features = ["font-kit", "wayland", "x11"] }
+
+[dependencies.write-safety]
+path = "../crates/write-safety"
+
+[dependencies.theme]
+path = "../crates/theme"
+
+[dependencies.browse]
+path = "../crates/browse"
+
+[dependencies.redis-io]
+path = "../crates/redis-io"
+# The app turns on the SSH tunnel stack (Phase 6): russh + the TOFU
+# known-hosts store. The default (feature-less) redis-io build is for
+# lean consumers; this app wants the full security surface.
+features = ["ssh"]
+
+[dependencies.connections-store]
+path = "../crates/connections-store"
+
+[dependencies.value-model]
+path = "../crates/value-model"
+
+[dependencies.console-engine]
+path = "../crates/console-engine"
+
+[dependencies.tokio]
+version = "1"
+features = ["rt", "rt-multi-thread", "sync", "time", "net", "io-util", "macros"]
+
+[dev-dependencies]
+# Security form-mapping tests serialize saved-connection metadata to
+# prove no secret reaches the persisted shape (PRD privacy audit).
+serde_json = "1"
+# Saved-connections sidebar tests scope REDIS_GPUI_CONFIG_DIR to a
+# tempdir per test.
+tempfile = "3"
+
+[[bin]]
+name = "redis-gpui"
+path = "main.rs"

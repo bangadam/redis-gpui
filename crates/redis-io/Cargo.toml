@@ -1,0 +1,56 @@
+[package]
+name = "redis-io"
+description = "Connection management, TLS, SSH tunnel, command futures, tri-state write results"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+# redis-rs 1.8.1: MultiplexedConnection, byte-level Value, rustls TLS.
+# NOTE on features (verified 2026-11-08 against the published 1.8.1):
+# The plain `tokio-comp` + `tls-rustls` combination does NOT compile at this
+# version (E0046: `RedisRuntime for Tokio` is missing `connect_tcp_tls`
+# unless a `tokio-*-tls-comp` feature is enabled). The working combination
+# for tokio + rustls is the combined `tokio-rustls-comp` feature. Webpki
+# root certificates are included so verified TLS works without a system
+# trust store; `tls-native-certs` is pulled in transitively by tls-rustls.
+redis = { version = "1.8.1", default-features = false, features = [
+    "aio",
+    "tokio-rustls-comp",
+    "tls-rustls-webpki-roots",
+] }
+tokio = { version = "1", features = ["rt", "macros", "time", "net", "io-util", "sync"] }
+async-trait = "0.1"
+thiserror = "2"
+# serde_json is a normal dep: `RedisConnectionConfig::to_persisted_json`
+# is production code used by connections-store (Phase 2+).
+serde_json = "1"
+# russh 0.65 (pure-Rust SSH) is OPTIONAL and only enabled by the `ssh`
+# feature: the app turns it on; every other consumer (tests, sibling
+# crates) keeps a lean build. Single-hop client only — see src/ssh.rs.
+# The `ssh` feature also pulls connections-store: the TOFU known-hosts
+# STORE lives there (redis-io owns the CHECK, at the handshake).
+russh = { version = "0.65", optional = true }
+rustls-pemfile = "2.2.0"
+rustls = "0.23"
+connections-store = { version = "0.1.0", path = "../connections-store", optional = true }
+sha2 = "0.10"
+
+[features]
+default = []
+fault-injection = []
+# SSH tunneling: feature-gated so the SSH stack never bloats builds that
+# don't need it. `cargo check -p redis-io --features ssh` is the compile
+# gate for this code.
+ssh = ["dep:russh", "dep:connections-store"]
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "time", "sync"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rcgen = "0.14.10"
+sha2 = "0.10"

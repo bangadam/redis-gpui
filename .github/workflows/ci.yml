@@ -1,0 +1,31 @@
+# CI checks for the redis-gpui workspace.
+#
+# GPUI is pinned to a Zed git revision, so the first run downloads and compiles
+# a large dependency graph (cache warming via Swatinem/rust-cache helps subsequent runs).
+# Linux and Windows CI are intentionally not enabled yet: only macOS has been
+# verified with a live run so far.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Install rustfmt and clippy
+        # rust-toolchain.toml pins channel 1.98.1, so rustup resolves it automatically.
+        run: rustup component add rustfmt clippy
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Run tests
+        run: cargo test --workspace
